@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: datamart cicd
+
+Resources:
+  HelloWorldStepFunctions:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      Fn::Transform:
+        Name: AWS::Include
+        Parameters:
+          Location: s3://quark-cicd-test/stepfunctions/HelloWorld.yaml
+      RoleArn: arn:aws:iam::875141268485:role/service-role/StepFunctions-HelloWorld-role-d149b24a
