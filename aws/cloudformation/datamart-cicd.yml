@@ -10,7 +10,9 @@ Resources:
                 Statement:
                     - Effect: Allow
                       Principal:
-                          Service: states.amazonaws.com
+                          Service:
+                              - states.amazonaws.com
+                              - scheduler.amazonaws.com
                       Action: sts:AssumeRole
             ManagedPolicyArns: [arn:aws:iam::aws:policy/AdministratorAccess]
     StepFunctionStateMachine:
