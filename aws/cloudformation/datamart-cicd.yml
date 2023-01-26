@@ -37,7 +37,7 @@ Resources:
                 MaximumWindowInMinutes: 60
             Name: HelloWorldEasyEverydayExecution-for-CloudFormation
             Target:
-                Arn: !GetAtt StepFunctionStateMachine.Arn
+                Arn: !Ref StepFunctionStateMachine
                 RoleArn: !GetAtt StepFunctionServiceRole.Arn
 Metadata:
     "AWS::CloudFormation::Designer":
