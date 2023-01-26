@@ -1,15 +1,6 @@
 version: 0.2
 
 phases:
-  #install:
-    #Ubuntu 標準イメージ 2.0 以降を使用する場合、ランタイムバージョンを指定する必要があります。
-    #ランタイムバージョンを指定して、Ubuntu 標準イメージ 2.0 以外のイメージを使用すると、ビルドは失敗します。
-    #runtime-versions:
-      # name: version
-      # name: version
-    #commands:
-      # - command
-      # - command
   pre_build:
     commands:
       - echo check aws cli version
@@ -17,7 +8,6 @@ phases:
   build:
     commands:
       - echo Nothing to do in the build phase...
-      # - command
   post_build:
     commands:
       - echo AWS resource copy to S3
@@ -26,21 +16,3 @@ phases:
       - echo datamart build for cloudformation
       - aws cloudformation package --template-file aws/cloudformation/datamart-cicd.yml --s3-bucket quark-cicd-test --s3-prefix cloudformation/package --output-template-file /tmp/cloudformation-datamart-cicd.yml
       - aws cloudformation deploy --no-fail-on-empty-changeset --template-file /tmp/cloudformation-datamart-cicd.yml --stack-name datamart-cicd --capabilities CAPABILITY_NAMED_IAM CAPABILITY_IAM
-#reports:
-  #report-name-or-arn:
-    #files:
-      # - location
-      # - location
-    #base-directory: location
-    #discard-paths: yes
-    #file-format: JunitXml | CucumberJson
-#artifacts:
-  #files:
-    # - location
-    # - location
-  #name: $(date +%Y-%m-%d)
-  #discard-paths: yes
-  #base-directory: location
-#cache:
-  #paths:
-    # - paths
