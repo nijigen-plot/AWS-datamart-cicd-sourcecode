@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: An example template for a Step Functions state machine.
 Resources:
     StepFunctionServiceRole:
-        Type: AWS::IAM::Role
+        Type: "AWS::IAM::Role"
         Properties:
             RoleName: HelloWorldEasy
             AssumeRolePolicyDocument:
@@ -25,6 +25,18 @@ Resources:
         Metadata:
             "AWS::CloudFormation::Designer":
                 id: 03217ee1-4cfd-4fee-804c-7a35f8901f6c
+    StepFunctionExecutionSchedule:
+        Type: "AWS::Scheduler::Schedule"
+        Properties:
+            Description: HelloWorldEasy StepFunction Excecution Schedule
+            ScheduleExpression: "cron(0 1 * * ? *)"
+            FlexibleTimeWindow:
+                Mode: FLEXIBLE
+                MaximumWindowInMinutes: 60
+            Name: HelloWorldEasyEverydayExecution-for-CloudFormation
+            Target:
+                Arn: !GetAtt StepFunctionStateMachine.Arn
+                RoleArn: !GetAtt StepFunctionServiceRole.Arn
 Metadata:
     "AWS::CloudFormation::Designer":
         03217ee1-4cfd-4fee-804c-7a35f8901f6c:
