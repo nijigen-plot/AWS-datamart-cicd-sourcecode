@@ -1,12 +1,38 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: datamart cicd
-
+Description: An example template for a Step Functions state machine.
 Resources:
-  HelloWorldStepFunctions:
-    Type: AWS::StepFunctions::StateMachine
-    Properties:
-      Fn::Transform:
-        Name: AWS::Include
-        Parameters:
-          Location: s3://quark-cicd-test/stepfunctions/HelloWorld.yaml
-      RoleArn: arn:aws:iam::875141268485:role/service-role/StepFunctions-HelloWorld-role-d149b24a
+    StepFunctionServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: HelloWorldEasy
+            AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service: states.amazonaws.com
+                      Action: sts:AssumeRole
+            ManagedPolicyArns: [arn:aws:iam::aws:policy/AdministratorAccess]
+    StepFunctionStateMachine:
+        Type: "AWS::StepFunctions::StateMachine"
+        Properties:
+            StateMachineName: HelloWorldEasy
+            StateMachineType: STANDARD
+            DefinitionS3Location:
+                Bucket: quark-cicd-test
+                Key: stepfunctions/HelloWorld-easy.yml
+            RoleArn: !GetAtt StepFunctionServiceRole.Arn
+        Metadata:
+            "AWS::CloudFormation::Designer":
+                id: 03217ee1-4cfd-4fee-804c-7a35f8901f6c
+Metadata:
+    "AWS::CloudFormation::Designer":
+        03217ee1-4cfd-4fee-804c-7a35f8901f6c:
+            size:
+                width: 60
+                height: 60
+            position:
+                x: 60
+                "y": 90
+            z: 1
+            embeds: []
