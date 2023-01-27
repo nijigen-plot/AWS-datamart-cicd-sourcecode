@@ -1,6 +1,7 @@
 #! /bin/bash
 
 WORKDIR='/tmp/lambda/zip/'
+mkdir -p ${WORKDIR}
 
 cd aws/lambda/src
 for dir in `ls -d */`
