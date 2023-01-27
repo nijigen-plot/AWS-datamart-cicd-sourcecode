@@ -14,7 +14,6 @@ phases:
       - echo AWS resource copy to S3
       - aws s3 sync --exact-timestamps --delete aws/stepfunctions/ s3://quark-cicd-test/stepfunctions/
       - aws s3 sync --exact-timestamps --delete aws/s3/create_table_query/ s3://quark-cicd-test/s3/create_table_query/
-      - aws s3 sync --exact-timestamps --delete aws/lambda/src/ s3://quark-cicd-test/lambda/src/
 
       - echo datamart build for cloudformation
       - aws cloudformation package --template-file aws/cloudformation/datamart-cicd.yml --s3-bucket quark-cicd-test --s3-prefix cloudformation/package --output-template-file /tmp/cloudformation-datamart-cicd.yml
