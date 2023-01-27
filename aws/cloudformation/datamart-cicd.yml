@@ -23,7 +23,7 @@ Resources:
         Properties:
             Code:
                 S3Bucket: quark-cicd-test
-                S3Key: lambda/src/athena-query-execution/lambda_function.py
+                S3Key: lambda/src/athena-query-execution.zip
             FunctionName: athena-query-execution
             Handler: lambda_function.lambda_handler
             Role: !GetAtt StepFunctionServiceRole.Arn
