@@ -1,0 +1,87 @@
+{
+  "StartAt": "CallLambda",
+  "States": {
+    "CallLambda": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:athena-query-scanning:$LATEST",
+        "Payload.$": "$"
+      },
+      "Next": "Choice"
+    },
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.table",
+          "StringEquals": "",
+          "Next": "QueryExecute"
+        }
+      ],
+      "Default": "Parallel"
+    },
+    "Parallel": {
+      "Type": "Parallel",
+      "Next": "QueryExecute",
+      "Branches": [
+        {
+          "StartAt": "Athena StartQueryExecution",
+          "States": {
+            "Athena StartQueryExecution": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+              "Parameters": {
+                "QueryString.$": "$.table",
+                "WorkGroup": "primary"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Lambda Invoke (1)",
+          "States": {
+            "Lambda Invoke (1)": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "OutputPath": "$.Payload",
+              "Parameters": {
+                "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:delete-s3-objects:$LATEST",
+                "Payload": {
+                  "bucket.$": "$.s3_bucket",
+                  "file_key.$": "$.s3_key"
+                }
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": null
+    },
+    "QueryExecute": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+      "Parameters": {
+        "QueryString.$": "$.query",
+        "WorkGroup": "primary"
+      },
+      "End": true
+    }
+  }
+}

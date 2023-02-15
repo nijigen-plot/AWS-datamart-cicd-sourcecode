@@ -18,13 +18,24 @@ Resources:
                       Action: sts:AssumeRole
             ManagedPolicyArns: [arn:aws:iam::aws:policy/AdministratorAccess]
     # Lambda
-    AthenaQueryExecution:
+    AthenaQueryScan:
         Type: "AWS::Lambda::Function"
         Properties:
             Code:
                 S3Bucket: quark-cicd-test
-                S3Key: lambda/src/athena-query-execution.zip
-            FunctionName: athena-query-execution
+                S3Key: lambda/src/athena-query-scan.zip
+            FunctionName: athena-query-scan
+            Handler: lambda_function.lambda_handler
+            Role: !GetAtt StepFunctionServiceRole.Arn
+            Runtime: python3.9
+            Timeout: 60
+    DeleteS3Objects:
+        Type: "AWS::Lambda::Function"
+        Properties:
+            Code:
+                S3Bucket: quark-cicd-test
+                S3Key: lambda/src/delete-s3-objects.zip
+            FunctionName: delete-s3-objects
             Handler: lambda_function.lambda_handler
             Role: !GetAtt StepFunctionServiceRole.Arn
             Runtime: python3.9
@@ -37,7 +48,7 @@ Resources:
             StateMachineType: STANDARD
             DefinitionS3Location:
                 Bucket: quark-cicd-test
-                Key: stepfunctions/daily_update_datamart.json
+                Key: stepfunctions/create_datamart.json
             RoleArn: !GetAtt StepFunctionServiceRole.Arn
         Metadata:
             "AWS::CloudFormation::Designer":
@@ -55,6 +66,10 @@ Resources:
             Target:
                 Arn: !Ref StepFunctionStateMachine
                 RoleArn: !GetAtt StepFunctionServiceRole.Arn
+                Input: '{
+                    "bucket": "quark-cicd-test",
+                    "file_key": "s3/create_table_query/riiid_aggregate.sql",
+                    }'
 Metadata:
     "AWS::CloudFormation::Designer":
         03217ee1-4cfd-4fee-804c-7a35f8901f6c:
