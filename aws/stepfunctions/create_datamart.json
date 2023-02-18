@@ -6,7 +6,7 @@
       "Resource": "arn:aws:states:::lambda:invoke",
       "OutputPath": "$.Payload",
       "Parameters": {
-        "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:athena-query-scanning:$LATEST",
+              "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:athena-query-scan:$LATEST",
         "Payload.$": "$"
       },
       "Next": "Choice"
