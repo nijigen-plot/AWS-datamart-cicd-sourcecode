@@ -66,7 +66,6 @@ Resources:
             Target:
                 Arn: !Ref StepFunctionStateMachine
                 RoleArn: !GetAtt StepFunctionServiceRole.Arn
-                Input: '{"bucket": "quark-cicd-test", "file_key": "s3/create_table_query/riiid_aggregate.sql"}'
 Metadata:
     "AWS::CloudFormation::Designer":
         03217ee1-4cfd-4fee-804c-7a35f8901f6c:
