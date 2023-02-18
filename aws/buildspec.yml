@@ -9,6 +9,7 @@ phases:
     commands:
       - echo Create Lambda Function zip
       - bash aws/script/create_zip_files.sh
+      - bash aws/script/create_map_inputs.sh
   post_build:
     commands:
       - echo AWS resource copy to S3
