@@ -9,6 +9,7 @@ phases:
     commands:
       - echo Create Lambda Function zip
       - bash aws/script/create_zip_files.sh
+      - echo Create Step Functions Distributed Map Input Parameter
       - bash aws/script/create_map_inputs.sh
   post_build:
     commands:
