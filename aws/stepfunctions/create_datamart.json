@@ -1,85 +1,118 @@
 {
-  "StartAt": "CallLambda",
+  "StartAt": "Map",
   "States": {
-    "CallLambda": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "OutputPath": "$.Payload",
-      "Parameters": {
-        "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:athena-query-scanning:$LATEST",
-        "Payload.$": "$"
-      },
-      "Next": "Choice"
-    },
-    "Choice": {
-      "Type": "Choice",
-      "Choices": [
-        {
-          "Variable": "$.table",
-          "StringEquals": "",
-          "Next": "QueryExecute"
-        }
-      ],
-      "Default": "Parallel"
-    },
-    "Parallel": {
-      "Type": "Parallel",
-      "Next": "QueryExecute",
-      "Branches": [
-        {
-          "StartAt": "Athena StartQueryExecution",
-          "States": {
-            "Athena StartQueryExecution": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
-              "Parameters": {
-                "QueryString.$": "$.table",
-                "WorkGroup": "primary"
-              },
-              "End": true
-            }
-          }
+    "Map": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "DISTRIBUTED",
+          "ExecutionType": "STANDARD"
         },
-        {
-          "StartAt": "Lambda Invoke (1)",
-          "States": {
-            "Lambda Invoke (1)": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::lambda:invoke",
-              "OutputPath": "$.Payload",
-              "Parameters": {
-                "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:delete-s3-objects:$LATEST",
-                "Payload": {
-                  "bucket.$": "$.s3_bucket",
-                  "file_key.$": "$.s3_key"
+        "StartAt": "CallLambda",
+        "States": {
+          "CallLambda": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+              "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:athena-query-scan:$LATEST",
+              "Payload.$": "$"
+            },
+            "Next": "Choice"
+          },
+          "Choice": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.table",
+                "StringEquals": "",
+                "Next": "QueryExecute"
+              }
+            ],
+            "Default": "Parallel"
+          },
+          "Parallel": {
+            "Type": "Parallel",
+            "Branches": [
+              {
+                "StartAt": "Athena StartQueryExecution",
+                "States": {
+                  "Athena StartQueryExecution": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+                    "Parameters": {
+                      "QueryString.$": "$.table",
+                      "WorkGroup": "primary"
+                    },
+                    "End": true
+                  }
                 }
               },
-              "Retry": [
-                {
-                  "ErrorEquals": [
-                    "Lambda.ServiceException",
-                    "Lambda.AWSLambdaException",
-                    "Lambda.SdkClientException",
-                    "Lambda.TooManyRequestsException"
-                  ],
-                  "IntervalSeconds": 2,
-                  "MaxAttempts": 6,
-                  "BackoffRate": 2
+              {
+                "StartAt": "Lambda Invoke",
+                "States": {
+                  "Lambda Invoke": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::lambda:invoke",
+                    "OutputPath": "$.Payload",
+                    "Parameters": {
+                      "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:delete-s3-objects:$LATEST",
+                      "Payload": {
+                        "bucket.$": "$.s3_bucket",
+                        "file_key.$": "$.s3_key"
+                      }
+                    },
+                    "Retry": [
+                      {
+                        "ErrorEquals": [
+                          "Lambda.ServiceException",
+                          "Lambda.AWSLambdaException",
+                          "Lambda.SdkClientException",
+                          "Lambda.TooManyRequestsException"
+                        ],
+                        "IntervalSeconds": 2,
+                        "MaxAttempts": 6,
+                        "BackoffRate": 2
+                      }
+                    ],
+                    "End": true
+                  }
                 }
-              ],
-              "End": true
-            }
+              }
+            ],
+            "ResultPath": null,
+            "Next": "QueryExecute"
+          },
+          "QueryExecute": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+            "Parameters": {
+              "QueryString.$": "$.query",
+              "WorkGroup": "primary"
+            },
+            "End": true
           }
         }
-      ],
-      "ResultPath": null
-    },
-    "QueryExecute": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
-      "Parameters": {
-        "QueryString.$": "$.query",
-        "WorkGroup": "primary"
+      },
+      "Label": "Map",
+      "MaxConcurrency": 1000,
+      "ItemReader": {
+        "Resource": "arn:aws:states:::s3:getObject",
+        "ReaderConfig": {
+          "InputType": "CSV",
+          "CSVHeaderLocation": "FIRST_ROW"
+        },
+        "Parameters": {
+          "Bucket": "quark-cicd-test",
+          "Key": "stepfunctions/distributed-map-source.csv"
+        }
+      },
+      "ResultWriter": {
+        "Resource": "arn:aws:states:::s3:putObject",
+        "Parameters": {
+          "Bucket": "step-functions-map-results-875141268485-ap-northeast-1",
+          "Prefix": "/"
+        }
       },
       "End": true
     }
