@@ -19,4 +19,4 @@ phases:
 
       - echo datamart build for cloudformation
       - aws cloudformation package --template-file aws/cloudformation/datamart-cicd.yml --s3-bucket quark-cicd-test --s3-prefix cloudformation/package --output-template-file /tmp/cloudformation-datamart-cicd.yml
-      - aws cloudformation deploy --no-fail-on-empty-changeset --template-file /tmp/cloudformation-datamart-cicd.yml --stack-name datamart-cicd --capabilities CAPABILITY_NAMED_IAM CAPABILITY_IAM
+      - aws cloudformation deploy --force-upload --no-fail-on-empty-changeset --template-file /tmp/cloudformation-datamart-cicd.yml --stack-name datamart-cicd --capabilities CAPABILITY_NAMED_IAM CAPABILITY_IAM
