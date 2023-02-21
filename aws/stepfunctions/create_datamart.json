@@ -12,10 +12,9 @@
         "States": {
           "CallLambda": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::lambda:invoke",
+            "Resource": "${AthenaQueryScan.Arn}",
             "OutputPath": "$.Payload",
             "Parameters": {
-              "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:athena-query-scan:$LATEST",
               "Payload.$": "$"
             },
             "Next": "Choice"
@@ -53,10 +52,9 @@
                 "States": {
                   "Lambda Invoke": {
                     "Type": "Task",
-                    "Resource": "arn:aws:states:::lambda:invoke",
+                    "Resource": "${DeleteS3Objects.Arn}",
                     "OutputPath": "$.Payload",
                     "Parameters": {
-                      "FunctionName": "arn:aws:lambda:ap-northeast-1:875141268485:function:delete-s3-objects:$LATEST",
                       "Payload": {
                         "bucket.$": "$.s3_bucket",
                         "file_key.$": "$.s3_key"
@@ -111,7 +109,7 @@
         "Resource": "arn:aws:states:::s3:putObject",
         "Parameters": {
           "Bucket": "step-functions-map-results-875141268485-ap-northeast-1",
-          "Prefix": "/"
+          "Prefix": ""
         }
       },
       "End": true
