@@ -1,0 +1,121 @@
+DefinitionString: 
+  !Sub
+  - |-
+    {
+      "StartAt": "Map",
+      "States": {
+        "Map": {
+          "Type": "Map",
+          "ItemProcessor": {
+            "ProcessorConfig": {
+              "Mode": "DISTRIBUTED",
+              "ExecutionType": "STANDARD"
+            },
+            "StartAt": "CallLambda",
+            "States": {
+              "CallLambda": {
+                "Type": "Task",
+                "Resource": "${AthenaQueryScan.Arn}",
+                "OutputPath": "$.Payload",
+                "Parameters": {
+                  "Payload.$": "$"
+                },
+                "Next": "Choice"
+              },
+              "Choice": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "Variable": "$.table",
+                    "StringEquals": "",
+                    "Next": "QueryExecute"
+                  }
+                ],
+                "Default": "Parallel"
+              },
+              "Parallel": {
+                "Type": "Parallel",
+                "Branches": [
+                  {
+                    "StartAt": "Athena StartQueryExecution",
+                    "States": {
+                      "Athena StartQueryExecution": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+                        "Parameters": {
+                          "QueryString.$": "$.table",
+                          "WorkGroup": "primary"
+                        },
+                        "End": true
+                      }
+                    }
+                  },
+                  {
+                    "StartAt": "Lambda Invoke",
+                    "States": {
+                      "Lambda Invoke": {
+                        "Type": "Task",
+                        "Resource": "${DeleteS3Objects.Arn}",
+                        "OutputPath": "$.Payload",
+                        "Parameters": {
+                          "Payload": {
+                            "bucket.$": "$.s3_bucket",
+                            "file_key.$": "$.s3_key"
+                          }
+                        },
+                        "Retry": [
+                          {
+                            "ErrorEquals": [
+                              "Lambda.ServiceException",
+                              "Lambda.AWSLambdaException",
+                              "Lambda.SdkClientException",
+                              "Lambda.TooManyRequestsException"
+                            ],
+                            "IntervalSeconds": 2,
+                            "MaxAttempts": 6,
+                            "BackoffRate": 2
+                          }
+                        ],
+                        "End": true
+                      }
+                    }
+                  }
+                ],
+                "ResultPath": null,
+                "Next": "QueryExecute"
+              },
+              "QueryExecute": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+                "Parameters": {
+                  "QueryString.$": "$.query",
+                  "WorkGroup": "primary"
+                },
+                "End": true
+              }
+            }
+          },
+          "Label": "Map",
+          "MaxConcurrency": 1000,
+          "ItemReader": {
+            "Resource": "arn:aws:states:::s3:getObject",
+            "ReaderConfig": {
+              "InputType": "CSV",
+              "CSVHeaderLocation": "FIRST_ROW"
+            },
+            "Parameters": {
+              "Bucket": "quark-cicd-test",
+              "Key": "stepfunctions/distributed-map-source.csv"
+            }
+          },
+          "ResultWriter": {
+            "Resource": "arn:aws:states:::s3:putObject",
+            "Parameters": {
+              "Bucket": "step-functions-map-results-875141268485-ap-northeast-1",
+              "Prefix": ""
+            }
+          },
+          "End": true
+        }
+      }
+    }
