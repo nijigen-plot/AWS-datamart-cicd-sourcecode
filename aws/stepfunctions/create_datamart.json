@@ -12,9 +12,10 @@
         "States": {
           "CallLambda": {
             "Type": "Task",
-            "Resource": "${AthenaQueryScan.Arn}",
+            "Resource": "arn:aws:states:::lambda:invoke",
             "OutputPath": "$.Payload",
             "Parameters": {
+              "FunctionName": "athena-query-scan",
               "Payload.$": "$"
             },
             "Next": "Choice"
@@ -52,9 +53,10 @@
                 "States": {
                   "Lambda Invoke": {
                     "Type": "Task",
-                    "Resource": "${DeleteS3Objects.Arn}",
+                    "Resource": "arn:aws:states:::lambda:invoke",
                     "OutputPath": "$.Payload",
                     "Parameters": {
+                      "FunctionName": "delete-s3-objects",
                       "Payload": {
                         "bucket.$": "$.s3_bucket",
                         "file_key.$": "$.s3_key"
