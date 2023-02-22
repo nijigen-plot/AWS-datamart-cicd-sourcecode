@@ -63,7 +63,7 @@ Resources:
             Fn::Transform:
                 Name: AWS::Include
                 Parameters:
-                    Location: !Sub "s3://${CFnResourceBucket}/stepfunctions/create_datamart.yaml"
+                    Location: !Sub "s3://${CFnResourceBucket}/stepfunctions/create_datamart.yml"
             RoleArn: !GetAtt StepFunctionServiceRole.Arn
         Metadata:
             "AWS::CloudFormation::Designer":
