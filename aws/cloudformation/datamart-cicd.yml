@@ -60,9 +60,10 @@ Resources:
         Properties:
             StateMachineName: AthenaQueryExecute
             StateMachineType: STANDARD
-            DefinitionS3Location:
-                Bucket: !Sub ${CFnResourceBucket}
-                Key: stepfunctions/create_datamart.json
+            Fn::Transform:
+                Name: AWS::Include
+                Parameters:
+                    Location: !Sub "s3://${CFnResourceBucket}/stepfunctions/create_datamart.yaml"
             RoleArn: !GetAtt StepFunctionServiceRole.Arn
         Metadata:
             "AWS::CloudFormation::Designer":
