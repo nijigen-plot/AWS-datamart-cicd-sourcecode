@@ -1,6 +1,5 @@
 DefinitionString: 
-  !Sub
-  - |-
+  Fn::Sub: |-
     {
       "StartAt": "Map",
       "States": {
